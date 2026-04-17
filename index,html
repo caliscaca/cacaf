@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kopi Senja | Professional POS System</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
@@ -48,13 +47,11 @@
                         <input type="text" id="search-input" onkeyup="filterMenu()" placeholder="Cari kopi..." class="px-4 py-2.5 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-orange-500 outline-none w-full md:w-64">
                     </div>
                 </div>
-
                 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4" id="menu-grid"></div>
             </div>
 
             <aside class="lg:w-96 bg-white rounded-[2.5rem] shadow-2xl p-8 h-fit sticky top-24 border border-stone-100">
                 <h3 class="text-xl font-bold mb-6">Detail Pesanan</h3>
-                
                 <div class="mb-6">
                     <label class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 block">Nomor Meja</label>
                     <select id="table-select" class="w-full p-3 rounded-xl border border-stone-100 bg-stone-50 font-bold text-sm focus:border-orange-500 outline-none">
@@ -64,9 +61,7 @@
                         <option value="T-01">Take Away</option>
                     </select>
                 </div>
-
                 <div id="cart-items" class="space-y-4 mb-8 max-h-[300px] overflow-y-auto custom-scroll pr-2"></div>
-
                 <div class="space-y-3 pt-6 border-t border-stone-50">
                     <div class="flex justify-between text-xs font-bold text-stone-400">
                         <span>Subtotal</span>
@@ -76,15 +71,13 @@
                         <span>Total</span>
                         <span id="grand-total" class="text-orange-600">Rp 0</span>
                     </div>
-
                     <div class="pt-4 space-y-2">
                         <label class="text-[10px] font-black text-stone-400 uppercase tracking-widest block">Metode Pembayaran</label>
                         <div class="flex gap-2">
-                            <button onclick="setPayment('Cash')" id="pay-cash" class="flex-1 py-3 rounded-xl border-2 border-stone-100 text-[10px] font-bold transition-all active-pay border-orange-500 bg-orange-50">CASH</button>
+                            <button onclick="setPayment('Cash')" id="pay-cash" class="flex-1 py-3 rounded-xl border-2 border-orange-500 bg-orange-50 text-[10px] font-bold transition-all">CASH</button>
                             <button onclick="setPayment('QRIS')" id="pay-qris" class="flex-1 py-3 rounded-xl border-2 border-stone-100 text-[10px] font-bold transition-all">QRIS</button>
                         </div>
                     </div>
-
                     <button onclick="processOrder()" class="w-full bg-stone-950 text-white font-bold py-5 rounded-2xl mt-4 hover:bg-orange-600 transition-all shadow-xl shadow-orange-900/10 uppercase tracking-widest text-xs">Konfirmasi & Pesan</button>
                 </div>
             </aside>
@@ -97,54 +90,26 @@
                 <h2 class="text-xl font-black text-orange-500 mb-10 hidden lg:block italic tracking-tighter text-center">ADMIN PANEL</h2>
                 <nav class="space-y-2">
                     <div class="p-4 bg-orange-600 rounded-2xl text-center"><i class="fas fa-home"></i> <span class="hidden lg:inline ml-2 font-bold">Dashboard</span></div>
-                    <div class="p-4 hover:bg-white/5 rounded-2xl text-center transition cursor-pointer"><i class="fas fa-boxes"></i> <span class="hidden lg:inline ml-2 font-bold">Stok Menu</span></div>
                 </nav>
             </aside>
-
             <main class="flex-1 p-6 lg:p-10">
                 <header class="flex justify-between items-center mb-10">
                     <h1 class="text-3xl font-black tracking-tight">Dashboard Overview</h1>
-                    <div class="bg-white px-6 py-3 rounded-2xl shadow-sm flex items-center gap-4">
-                        <div class="text-right">
-                            <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Revenue Hari Ini</p>
-                            <h4 id="admin-revenue" class="text-xl font-black text-stone-900">Rp 0</h4>
-                        </div>
+                    <div class="bg-white px-6 py-3 rounded-2xl shadow-sm">
+                        <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Revenue (Selesai)</p>
+                        <h4 id="admin-revenue" class="text-xl font-black text-stone-900">Rp 0</h4>
                     </div>
                 </header>
-
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                    <div class="bg-white p-6 rounded-[2rem] shadow-sm">
-                        <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1">Menunggu</p>
-                        <h3 id="stat-pending" class="text-3xl font-black">0</h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-[2rem] shadow-sm">
-                        <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1">Dimasak</p>
-                        <h3 id="stat-process" class="text-3xl font-black text-orange-500">0</h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-[2rem] shadow-sm">
-                        <p class="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-1">Selesai</p>
-                        <h3 id="stat-done" class="text-3xl font-black text-green-600">0</h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border-2 border-orange-500">
-                        <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-1">Total Order</p>
-                        <h3 id="stat-total" class="text-3xl font-black">0</h3>
-                    </div>
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm"><p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">Menunggu</p><h3 id="stat-pending" class="text-3xl font-black">0</h3></div>
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm"><p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">Dimasak</p><h3 id="stat-process" class="text-3xl font-black text-orange-500">0</h3></div>
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm"><p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">Selesai</p><h3 id="stat-done" class="text-3xl font-black text-green-600">0</h3></div>
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border-2 border-orange-500"><p class="text-[10px] font-bold text-orange-400 mb-1 uppercase">Total Order</p><h3 id="stat-total" class="text-3xl font-black">0</h3></div>
                 </div>
-
                 <div class="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-stone-100">
-                    <div class="p-6 border-b border-stone-50 flex justify-between items-center">
-                        <h3 class="font-bold">Antrean Pesanan Aktif</h3>
-                        <span class="text-[10px] bg-green-100 text-green-700 px-3 py-1 rounded-full font-bold">Auto Refresh On</span>
-                    </div>
                     <table class="w-full text-left">
                         <thead class="bg-stone-50 text-[10px] font-black text-stone-400 uppercase">
-                            <tr>
-                                <th class="p-5">ID / Meja</th>
-                                <th class="p-5">Item</th>
-                                <th class="p-5">Total</th>
-                                <th class="p-5">Status</th>
-                                <th class="p-5 text-right">Aksi</th>
-                            </tr>
+                            <tr><th class="p-5">ID / Meja</th><th class="p-5">Item</th><th class="p-5">Total</th><th class="p-5">Status</th><th class="p-5 text-right">Aksi</th></tr>
                         </thead>
                         <tbody id="admin-order-body" class="divide-y divide-stone-50"></tbody>
                     </table>
@@ -162,7 +127,6 @@
     </div>
 
     <script>
-        // Database & State
         const menuData = [
             { id: 1, name: 'Cloudy Latte', price: 28000, img: '☁️', stock: 15, cat: 'Coffee' },
             { id: 2, name: 'Espresso Black', price: 18000, img: '☕', stock: 20, cat: 'Coffee' },
@@ -176,7 +140,7 @@
         let currentPayment = 'Cash';
 
         function init() {
-            renderMenu();
+            renderMenu(menuData);
             updateCartUI();
         }
 
@@ -186,9 +150,10 @@
             if(id === 'admin') renderAdmin();
         }
 
-        function renderMenu() {
+        function renderMenu(data) {
             const grid = document.getElementById('menu-grid');
-            grid.innerHTML = menuData.map(p => `
+            grid.innerHTML = data.length === 0 ? `<div class="col-span-full text-center py-10 italic text-stone-400">Menu tidak ditemukan...</div>` :
+                data.map(p => `
                 <div class="bg-white p-5 rounded-[2rem] border border-stone-100 shadow-sm hover:shadow-xl transition-all duration-500 group">
                     <div class="text-4xl mb-4 transform group-hover:scale-125 transition-transform duration-500">${p.img}</div>
                     <span class="text-[9px] font-black uppercase text-stone-300 tracking-[0.2em] mb-1 block">${p.cat}</span>
@@ -202,96 +167,91 @@
             `).join('');
         }
 
+        function filterMenu() {
+            const input = document.getElementById('search-input').value.toLowerCase();
+            const filtered = menuData.filter(m => m.name.toLowerCase().includes(input));
+            renderMenu(filtered);
+        }
+
         function addToCart(id) {
             const p = menuData.find(x => x.id === id);
-            const exists = cart.find(x => x.id === id);
-            if(exists) exists.qty++; else cart.push({...p, qty: 1});
+            const inCart = cart.find(x => x.id === id);
+            if(inCart) {
+                if(inCart.qty < p.stock) inCart.qty++; else alert('Stok maksimal tercapai');
+            } else {
+                cart.push({...p, qty: 1});
+            }
             updateCartUI();
         }
 
         function updateCartUI() {
             const list = document.getElementById('cart-items');
             document.getElementById('cart-count').innerText = cart.reduce((a,b) => a+b.qty, 0);
-            
             list.innerHTML = cart.length === 0 ? `<div class="text-center py-10 opacity-20 italic text-xs">Kosong...</div>` :
                 cart.map((item, idx) => `
-                    <div class="flex justify-between items-center bg-stone-50 p-4 rounded-2xl border border-dashed border-stone-200">
-                        <div><h5 class="text-xs font-bold">${item.name}</h5><p class="text-[9px] font-black text-orange-500 uppercase italic">x${item.qty}</p></div>
-                        <div class="flex items-center gap-3">
-                            <button onclick="changeQty(${idx}, -1)" class="w-6 h-6 rounded-full bg-white shadow-sm border border-stone-100 flex items-center justify-center text-xs">-</button>
-                            <button onclick="changeQty(${idx}, 1)" class="w-6 h-6 rounded-full bg-white shadow-sm border border-stone-100 flex items-center justify-center text-xs">+</button>
+                    <div class="flex justify-between items-center bg-stone-50 p-4 rounded-2xl border border-dashed border-stone-200 text-xs">
+                        <div><h5 class="font-bold">${item.name}</h5><p class="font-black text-orange-500 uppercase italic">x${item.qty}</p></div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="changeQty(${idx}, -1)" class="w-6 h-6 rounded-full bg-white shadow-sm border border-stone-100 flex items-center justify-center">-</button>
+                            <button onclick="changeQty(${idx}, 1)" class="w-6 h-6 rounded-full bg-white shadow-sm border border-stone-100 flex items-center justify-center">+</button>
                         </div>
                     </div>
                 `).join('');
-
             const total = cart.reduce((a,b) => a + (b.price * b.qty), 0);
             document.getElementById('subtotal').innerText = `Rp ${total.toLocaleString('id-ID')}`;
             document.getElementById('grand-total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
         }
 
         function changeQty(idx, delta) {
-            cart[idx].qty += delta;
-            if(cart[idx].qty < 1) cart.splice(idx, 1);
+            const item = cart[idx];
+            const original = menuData.find(m => m.id === item.id);
+            if(delta > 0 && item.qty >= original.stock) return alert('Stok tidak cukup!');
+            item.qty += delta;
+            if(item.qty < 1) cart.splice(idx, 1);
             updateCartUI();
         }
 
         function setPayment(method) {
             currentPayment = method;
-            document.getElementById('pay-cash').classList.toggle('border-orange-500', method === 'Cash');
-            document.getElementById('pay-cash').classList.toggle('bg-orange-50', method === 'Cash');
-            document.getElementById('pay-qris').classList.toggle('border-orange-500', method === 'QRIS');
-            document.getElementById('pay-qris').classList.toggle('bg-orange-50', method === 'QRIS');
+            document.getElementById('pay-cash').className = `flex-1 py-3 rounded-xl border-2 text-[10px] font-bold transition-all ${method === 'Cash' ? 'border-orange-500 bg-orange-50' : 'border-stone-100'}`;
+            document.getElementById('pay-qris').className = `flex-1 py-3 rounded-xl border-2 text-[10px] font-bold transition-all ${method === 'QRIS' ? 'border-orange-500 bg-orange-50' : 'border-stone-100'}`;
         }
 
         function processOrder() {
             if(cart.length === 0) return alert('Pilih menu dulu!');
-            if(currentPayment === 'QRIS') {
-                document.getElementById('qris-modal').classList.remove('hidden');
-            } else {
-                finishOrder();
-            }
+            if(currentPayment === 'QRIS') document.getElementById('qris-modal').classList.remove('hidden'); else finishOrder();
         }
 
         function finishOrder() {
+            const total = cart.reduce((a,b) => a + (b.price * b.qty), 0);
             const newOrder = {
                 id: Math.floor(1000 + Math.random() * 9000),
                 table: document.getElementById('table-select').value,
                 items: [...cart],
-                total: cart.reduce((a,b) => a + (b.price * b.qty), 0),
+                total: total,
                 method: currentPayment,
-                status: 'Pending',
-                time: new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})
+                status: 'Pending'
             };
-
-            // Update Stok
-            cart.forEach(item => {
-                const target = menuData.find(m => m.id === item.id);
-                if(target) target.stock -= item.qty;
-            });
-
+            cart.forEach(item => { menuData.find(m => m.id === item.id).stock -= item.qty; });
             orders.unshift(newOrder);
             localStorage.setItem('pos_orders', JSON.stringify(orders));
-            
             document.getElementById('qris-modal').classList.add('hidden');
-            cart = [];
-            updateCartUI();
-            renderMenu();
-            alert('Pesanan Terkirim! Mohon tunggu di meja Anda.');
+            cart = []; updateCartUI(); renderMenu(menuData);
+            alert('Pesanan Terkirim!');
         }
 
-        // --- ADMIN FUNCTIONS ---
+        function showHistory() { alert(`Terdapat ${orders.length} riwayat pesanan tersimpan.`); }
+
         function renderAdmin() {
             const body = document.getElementById('admin-order-body');
             body.innerHTML = orders.map((o, idx) => `
                 <tr class="hover:bg-stone-50 transition text-[11px] font-bold">
-                    <td class="p-5 font-mono text-stone-400">#${o.id}<br><span class="text-orange-500">MEJA ${o.table}</span></td>
+                    <td class="p-5 font-mono text-stone-400">#${o.id}<br><span class="text-orange-500 uppercase">MEJA ${o.table}</span></td>
                     <td class="p-5 text-stone-600">${o.items.map(i => `${i.name}(${i.qty})`).join(', ')}</td>
                     <td class="p-5 text-stone-950 italic">Rp ${o.total.toLocaleString('id-ID')}</td>
                     <td class="p-5">
                         <span class="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter shadow-sm
-                        ${o.status === 'Pending' ? 'bg-yellow-100 text-yellow-600' : o.status === 'Proses' ? 'bg-orange-500 text-white' : 'bg-green-100 text-green-600'}">
-                            ${o.status}
-                        </span>
+                        ${o.status === 'Pending' ? 'bg-yellow-100 text-yellow-600' : o.status === 'Proses' ? 'bg-orange-500 text-white' : 'bg-green-100 text-green-600'}">${o.status}</span>
                     </td>
                     <td class="p-5 text-right flex gap-1 justify-end">
                         ${o.status === 'Pending' ? `<button onclick="updateStatus(${idx}, 'Proses')" class="bg-stone-900 text-white p-2 rounded-lg text-[8px]">PROSES</button>` : ''}
@@ -300,7 +260,6 @@
                     </td>
                 </tr>
             `).join('');
-
             updateStats();
         }
 
@@ -315,16 +274,8 @@
             document.getElementById('stat-process').innerText = orders.filter(o => o.status === 'Proses').length;
             document.getElementById('stat-done').innerText = orders.filter(o => o.status === 'Selesai').length;
             document.getElementById('stat-total').innerText = orders.length;
-            
-            const revenue = orders.filter(o => o.status === 'Selesai').reduce((a,b) => a + b.total, 0);
-            document.getElementById('admin-revenue').innerText = `Rp ${revenue.toLocaleString('id-ID')}`;
-        }
-
-        function filterMenu() {
-            const input = document.getElementById('search-input').value.toLowerCase();
-            const grid = document.getElementById('menu-grid');
-            const filtered = menuData.filter(m => m.name.toLowerCase().includes(input));
-            // Re-render filtered (Logic serupa dengan renderMenu tapi ke filtered)
+            const rev = orders.filter(o => o.status === 'Selesai').reduce((a,b) => a + b.total, 0);
+            document.getElementById('admin-revenue').innerText = `Rp ${rev.toLocaleString('id-ID')}`;
         }
 
         init();
