@@ -6,6 +6,31 @@
     <title>Kopi Senja | Professional POS System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDnaJ1KKoPtDxmXvW6M6smdRu5NPG90PhcY",
+            authDomain: "cacef-a14bc.firebaseapp.com",
+            projectId: "cacef-a14bc",
+            storageBucket: "cacef-a14bc.firebasestorage.app",
+            messagingSenderId: "938285152529",
+            appId: "1:938285152529:web:c2ffeb050102d09e1c74b0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Ekspos ke window agar bisa diakses script biasa
+        window.db = db;
+        window.fbOps = { addDoc, collection, onSnapshot, query, orderBy, doc, updateDoc };
+        
+        // Mulai sinkronisasi data
+        initApp();
+    </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f3f4f6; }
@@ -27,7 +52,7 @@
         <nav class="glass-nav text-white p-4 sticky top-0 z-50 flex justify-between items-center px-6 lg:px-12 border-b border-white/10">
             <h1 class="text-xl font-black tracking-tighter text-orange-500 italic">KOPI<span class="text-white font-normal">SENJA.</span></h1>
             <div class="flex items-center gap-6">
-                <button onclick="showHistory()" class="text-xs font-bold uppercase tracking-widest hover:text-orange-500">History</button>
+                <button onclick="alert('Fitur History segera hadir!')" class="text-xs font-bold uppercase tracking-widest hover:text-orange-500">History</button>
                 <div class="h-8 w-[1px] bg-white/20"></div>
                 <div class="relative">
                     <i class="fas fa-shopping-cart text-xl"></i>
@@ -104,7 +129,7 @@
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm"><p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">Menunggu</p><h3 id="stat-pending" class="text-3xl font-black">0</h3></div>
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm"><p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">Dimasak</p><h3 id="stat-process" class="text-3xl font-black text-orange-500">0</h3></div>
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm"><p class="text-[10px] font-bold text-stone-400 mb-1 uppercase">Selesai</p><h3 id="stat-done" class="text-3xl font-black text-green-600">0</h3></div>
-                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border-2 border-orange-500"><p class="text-[10px] font-bold text-orange-400 mb-1 uppercase">Total Order</p><h3 id="stat-total" class="text-3xl font-black">0</h3></div>
+                    <div class="bg-white p-6 rounded-[2rem] shadow-sm border-2 border-orange-500"><p class="text-[10px] font-bold text-orange-400 mb-1 uppercase">Total Cloud</p><h3 id="stat-total" class="text-3xl font-black">0</h3></div>
                 </div>
                 <div class="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-stone-100">
                     <table class="w-full text-left">
@@ -136,12 +161,22 @@
         ];
 
         let cart = [];
-        let orders = JSON.parse(localStorage.getItem('pos_orders')) || [];
+        let orders = []; // Sekarang diisi dari Firebase
         let currentPayment = 'Cash';
 
-        function init() {
+        // Tunggu Firebase Siap
+        function initApp() {
             renderMenu(menuData);
             updateCartUI();
+            
+            const { collection, query, orderBy, onSnapshot } = window.fbOps;
+            const q = query(collection(window.db, "orders"), orderBy("createdAt", "desc"));
+
+            onSnapshot(q, (snapshot) => {
+                orders = snapshot.docs.map(doc => ({ firestoreId: doc.id, ...doc.data() }));
+                if(document.getElementById('admin').classList.contains('active')) renderAdmin();
+                updateStats();
+            });
         }
 
         function switchTab(id) {
@@ -152,8 +187,7 @@
 
         function renderMenu(data) {
             const grid = document.getElementById('menu-grid');
-            grid.innerHTML = data.length === 0 ? `<div class="col-span-full text-center py-10 italic text-stone-400">Menu tidak ditemukan...</div>` :
-                data.map(p => `
+            grid.innerHTML = data.map(p => `
                 <div class="bg-white p-5 rounded-[2rem] border border-stone-100 shadow-sm hover:shadow-xl transition-all duration-500 group">
                     <div class="text-4xl mb-4 transform group-hover:scale-125 transition-transform duration-500">${p.img}</div>
                     <span class="text-[9px] font-black uppercase text-stone-300 tracking-[0.2em] mb-1 block">${p.cat}</span>
@@ -222,25 +256,28 @@
             if(currentPayment === 'QRIS') document.getElementById('qris-modal').classList.remove('hidden'); else finishOrder();
         }
 
-        function finishOrder() {
+        async function finishOrder() {
             const total = cart.reduce((a,b) => a + (b.price * b.qty), 0);
             const newOrder = {
                 id: Math.floor(1000 + Math.random() * 9000),
                 table: document.getElementById('table-select').value,
-                items: [...cart],
+                items: cart.map(i => ({name: i.name, qty: i.qty})),
                 total: total,
                 method: currentPayment,
-                status: 'Pending'
+                status: 'Pending',
+                createdAt: new Date()
             };
-            cart.forEach(item => { menuData.find(m => m.id === item.id).stock -= item.qty; });
-            orders.unshift(newOrder);
-            localStorage.setItem('pos_orders', JSON.stringify(orders));
-            document.getElementById('qris-modal').classList.add('hidden');
-            cart = []; updateCartUI(); renderMenu(menuData);
-            alert('Pesanan Terkirim!');
-        }
 
-        function showHistory() { alert(`Terdapat ${orders.length} riwayat pesanan tersimpan.`); }
+            try {
+                const { addDoc, collection } = window.fbOps;
+                await addDoc(collection(window.db, "orders"), newOrder);
+                
+                cart.forEach(item => { menuData.find(m => m.id === item.id).stock -= item.qty; });
+                document.getElementById('qris-modal').classList.add('hidden');
+                cart = []; updateCartUI(); renderMenu(menuData);
+                alert('Pesanan Terkirim ke Cloud!');
+            } catch (e) { alert('Gagal mengirim pesanan.'); }
+        }
 
         function renderAdmin() {
             const body = document.getElementById('admin-order-body');
@@ -254,19 +291,16 @@
                         ${o.status === 'Pending' ? 'bg-yellow-100 text-yellow-600' : o.status === 'Proses' ? 'bg-orange-500 text-white' : 'bg-green-100 text-green-600'}">${o.status}</span>
                     </td>
                     <td class="p-5 text-right flex gap-1 justify-end">
-                        ${o.status === 'Pending' ? `<button onclick="updateStatus(${idx}, 'Proses')" class="bg-stone-900 text-white p-2 rounded-lg text-[8px]">PROSES</button>` : ''}
-                        ${o.status === 'Proses' ? `<button onclick="updateStatus(${idx}, 'Selesai')" class="bg-green-500 text-white p-2 rounded-lg text-[8px]">DONE</button>` : ''}
-                        ${o.status === 'Selesai' ? `<span class="text-stone-300 uppercase italic">Archived</span>` : ''}
+                        ${o.status === 'Pending' ? `<button onclick="updateStatus('${o.firestoreId}', 'Proses')" class="bg-stone-900 text-white p-2 rounded-lg text-[8px]">PROSES</button>` : ''}
+                        ${o.status === 'Proses' ? `<button onclick="updateStatus('${o.firestoreId}', 'Selesai')" class="bg-green-500 text-white p-2 rounded-lg text-[8px]">DONE</button>` : ''}
                     </td>
                 </tr>
             `).join('');
-            updateStats();
         }
 
-        function updateStatus(idx, status) {
-            orders[idx].status = status;
-            localStorage.setItem('pos_orders', JSON.stringify(orders));
-            renderAdmin();
+        async function updateStatus(docId, status) {
+            const { doc, updateDoc } = window.fbOps;
+            await updateDoc(doc(window.db, "orders", docId), { status: status });
         }
 
         function updateStats() {
@@ -277,8 +311,6 @@
             const rev = orders.filter(o => o.status === 'Selesai').reduce((a,b) => a + b.total, 0);
             document.getElementById('admin-revenue').innerText = `Rp ${rev.toLocaleString('id-ID')}`;
         }
-
-        init();
     </script>
 </body>
 </html>
